@@ -5,8 +5,17 @@ import Principal from './components/Principal.vue'
 import Formato from './components/Formato.vue'
 import Bandeja from './components/Bandeja.vue'
 import Datos from './components/Datos.vue'
+import adminUsers from './components/adminUsers.vue'
 import firebase from 'firebase'
 import BandejaSalida from './components/BandejaSalida.vue'
+import VModal from 'vue-js-modal'
+import VueMaterial from 'vue-material'
+import 'vue-material/dist/vue-material.min.css'
+
+Vue.use(VueMaterial)
+ 
+Vue.use(VModal)
+
 Vue.use(Router)
 
 let router=new Router({
@@ -30,7 +39,7 @@ let router=new Router({
       name: 'principal',
       component: Principal,
       meta: {
-        requiresAuth: true
+        requiresAuth: false
       },
       children:[
         {
@@ -52,6 +61,11 @@ let router=new Router({
           path:'datos',
           name:'datos',
           component:Datos
+        },
+        {
+          path:'adminusers',
+          name:'adminusers',
+          component:adminUsers
         }
       ]
     }
