@@ -83,6 +83,8 @@
                   localStorage.setItem("nombre", doc.data().nombre)
                   localStorage.setItem("public_key", doc.data().public_key)
                   localStorage.setItem("private_key", doc.data().private_key)
+                  localStorage.setItem("isAdmin", doc.data().isAdmin)
+                  this.$root.$emit("isAdmin", doc.data().isAdmin);
                 });
               })
               .catch(err => {

@@ -17,8 +17,8 @@
       <md-button md-raised md-primary><router-link to="/principal/bandejasalida">Bandeja de Salida</router-link></md-button>
 
     </md-menu>
-    <md-menu md-direction="top-start">
-      <md-button md-raised md-primary><router-link to="/principal/adminusers">Administrar usuarios</router-link></md-button>
+    <md-menu md-direction="top-start" v-if="isAdmin">
+      <md-button md-raised md-primary v-if="isAdmin"><router-link to="/principal/adminusers" >Administrar usuarios</router-link></md-button>
 
     </md-menu>
 
@@ -30,7 +30,7 @@
             
             <router-view></router-view>
     </div>
- <md-card md-with-hover v-bind:style="card" v-show="principal" >
+ <md-card md-with-hover v-bind:style="card" >
             <md-ripple>
                 <md-card-header>
                     <div class="md-title">Proyecto Criptografía</div>
@@ -56,8 +56,10 @@ export default {
     data(){
 return{
     show:false,
+    isAdmin : localStorage.getItem("isAdmin"),
     nombre:"",
     principal:false,
+    usuario : [],
     rfc:localStorage.getItem("rfc"),
     router:this.$router.currentRoute.fullPath,
         card:{
@@ -70,14 +72,24 @@ return{
     
        salir: function() {
       firebase.auth().signOut().then(() => {
+                       localStorage.clear();
+
         this.$router.replace('/login')
+
       })
+
     }
   },
   mounted(){
+    console.log(this.isAdmin)
       if(this.$router.currentRoute.fullPath=='/principal'){
           this.principal=true
       }
+      this.$root.$on('isAdmin', data => {
+        console.log(data);
+        this.isAdmin = data
+    });
+
   },
   watch:{
   $route (to, from){

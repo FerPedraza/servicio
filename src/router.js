@@ -39,7 +39,7 @@ let router=new Router({
       name: 'principal',
       component: Principal,
       meta: {
-        requiresAuth: false
+        requiresAuth: true
       },
       children:[
         {
