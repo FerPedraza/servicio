@@ -40,6 +40,12 @@
                       </md-list-item>
                       <md-list-item>
                         <md-field>
+                          <label>Contraseña</label>
+                          <md-input v-model="password" type="password"></md-input>
+                        </md-field>
+                      </md-list-item>
+                      <md-list-item>
+                        <md-field>
                           <label>Estatus inicial</label>
                           <md-input v-model="status"></md-input>
                         </md-field>
@@ -63,6 +69,12 @@
                         </md-field>
                       </md-list-item>
                     </md-list>
+                    <!--<md-list-item>
+                        <md-field>
+                          <label>¿Administrador del sistema?</label>
+                          <md-checkbox v-model="isAdmin" class="md-primary">Primary</md-checkbox>
+                        </md-field>
+                      </md-list-item>-->
 
                     <md-button v-bind:style="color" @click="showModal = false">Cancelar</md-button>
                     <md-button v-bind:style="color" @click="agregarUsuarios()">Aceptar</md-button>
@@ -74,7 +86,7 @@
         </div>
 
         <md-list>
-          <md-list-item v-for="destinatario in destinatarios" >
+          <md-list-item v-for="destinatario in destinatarios" :key="componentKey">
             <label class="md-list-item-text">{{destinatario.nombre}}</label>
             <md-content class="md-primary">{{destinatario.estado}}</md-content>
             
@@ -85,11 +97,11 @@
               :md-offset-y="-36"
             >
               <md-button md-menu-trigger>
-                <md-icon>menu</md-icon>
+                <i class="material-icons">more_vert</i>
               </md-button>
 
               <md-menu-content>
-                <md-menu-item @click="eliminarUsuario(destinatario.nombre)">Eliminar</md-menu-item>
+                <md-menu-item @click="eliminarUsuario(destinatario.email)">Eliminar</md-menu-item>
                 <md-menu-item @click="inhabilitarUsuario(destinatario.nombre)">Inhabilitar</md-menu-item>
                 <md-menu-item @click="activarUsuario(destinatario.nombre)">Activar</md-menu-item>
               </md-menu-content>
@@ -105,6 +117,15 @@ import pdf from "@/Plantilla";
 import { db } from "../main";
 import { functions } from "firebase";
 import jsPDF from "jspdf";
+import firebase from 'firebase';
+var admin = require("firebase-admin");
+
+var serviceAccount = require("../proj-crypto-firebase-adminsdk-jx8dw-679f2ab9b3.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://proj-crypto.firebaseio.com"
+});
 
 var RSA = require("jsrsasign");
 var d = new Date();
@@ -112,6 +133,7 @@ var fecha = d.getDate() + "/" + d.getMonth() + "/" + d.getFullYear();
 export default {
   data() {
     return {
+      componentKey: 0,
       showModal: false,
       rfc: localStorage.getItem("rfc"),
       remitente: localStorage.getItem("nombre"),
@@ -153,8 +175,9 @@ export default {
       status: "",
       RFC: "",
       cargo: "",
-      departamento: ""
-
+      departamento: "",
+      password: "",
+      isAdmin: false
     };
   },
   firestore() {
@@ -164,13 +187,17 @@ export default {
         snap.forEach(doc => {
           this.destinatarios.push({
             nombre: doc.data().nombre,
-            estado: doc.data().estado
+            estado: doc.data().estado,
+            email: doc.data().email
           });
         });
       });
   },
 
   methods: {
+    forceRerender() {
+      this.componentKey += 1;  
+    },
     assignDialogRef(dialog) {
       this.dialog = dialog;
     },
@@ -182,6 +209,7 @@ export default {
           private_key: RSA.KEYUTIL.getPEM(llaves.prvKeyObj, "PKCS8PRV"),
           public_key: RSA.KEYUTIL.getPEM(llaves.pubKeyObj)
         });
+      
     },
     agregarUsuarios: function() {
       let data = {
@@ -192,27 +220,56 @@ export default {
         nombre: this.nombre,
         private_key: "",
         public_key: "",
-        rfc: this.RFC
+        rfc: this.RFC,
+        isAdmin: this.isAdmin
         };
       db.collection('usuarios').doc(this.RFC);
       db.collection('usuarios').doc(this.RFC).set(data);
       this.agregarUsuario(this.RFC)
-      console.log("Fertig!");
       this.showModal = false
+      firebase.auth().createUserWithEmailAndPassword(this.email, this.password).catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  console.log(error.message)
+  // ...
+});
+this.forceRerender()
+
+
+
     },
-    eliminarUsuario: function(name) {
+    eliminarUsuario: function(email) {
+      /*
       db.collection("usuarios")
-        .where("nombre", "==", name)
+        .where("email", "==", email)
         .get()
         .then(snap => {
           return snap.docs[0].ref.delete();
         })
         .then(() => {
           console.log("Successfully updated the record");
+         var index = this.destinatarios.indexOf(email)
+         this.destinatarios.splice(index,1)
         })
         .catch(error => {
           console.error("There was an error editing the record: " + error);
-        });
+        });*/
+        admin.auth().getUserByEmail(email)
+  .then(function(userRecord) {
+    // See the UserRecord reference doc for the contents of userRecord.
+    console.log('Successfully fetched user data:', userRecord.toJSON());
+  })
+  .catch(function(error) {
+   console.log('Error fetching user data:', error);
+  });
+        /*admin.auth().deleteUser(uid)
+  .then(function() {
+    console.log('Successfully deleted user');
+  })
+  .catch(function(error) {
+    console.log('Error deleting user:', error);
+  });*/
     },
     inhabilitarUsuario: function(name) {
       db.collection("usuarios")

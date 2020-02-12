@@ -30,7 +30,7 @@
             
             <router-view></router-view>
     </div>
- <md-card md-with-hover v-bind:style="card" >
+ <md-card md-with-hover v-bind:style="card" v-show="false" >
             <md-ripple>
                 <md-card-header>
                     <div class="md-title">Proyecto Criptografía</div>

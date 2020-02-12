@@ -10,7 +10,6 @@ import firebase from 'firebase'
 import BandejaSalida from './components/BandejaSalida.vue'
 import VModal from 'vue-js-modal'
 import VueMaterial from 'vue-material'
-import 'vue-material/dist/vue-material.min.css'
 
 Vue.use(VueMaterial)
  

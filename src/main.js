@@ -10,6 +10,7 @@ import VueA11yDialog from 'vue-a11y-dialog'
 Vue.use(VueA11yDialog)
 Vue.use(VueMaterial)
 Vue.use(VueFire)
+
 var config = {
   apiKey: "AIzaSyCm6ldTlUzZErMnI9xpBoRYj7rnOBmTb1A",
   authDomain: "proj-crypto.firebaseapp.com",
