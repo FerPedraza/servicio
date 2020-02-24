@@ -47,7 +47,10 @@
                       <md-list-item>
                         <md-field>
                           <label>Estatus inicial</label>
-                          <md-input v-model="status"></md-input>
+                          <md-select v-model="status" name="status" id="status">
+                            <md-option value="activo">Activo</md-option>
+                            <md-option value="inactivo">Inactivo</md-option>
+                          </md-select>
                         </md-field>
                       </md-list-item>
                       <md-list-item>
@@ -57,18 +60,44 @@
                         </md-field>
                       </md-list-item>
                       <md-list-item>
+                       
+                            <md-field>
+                              <label>Departamento</label>
+                              <div id="selection">
+                              <md-select
+                                v-model="departamento"
+                                name="departamento"
+                                id="departamento"
+                              >
+                              
+                                <md-option value="consejo">Consejo Tecnico Consultivo Escolar</md-option>
+                                <md-option value="comite">Comite Interno de Proyectos</md-option>
+                                <md-option value="decanato">Decanato</md-option>
+                                <md-option
+                                  value="coordinacion"
+                                >Coordinacion de Enlace y Gestion Tecnica</md-option>
+                                <md-option value="informatica">Unidad de Informatica</md-option>
+                                <md-option value="subdireccionAcademica">Subdireccion Academica</md-option>
+                                <md-option value="cienciasBasicas">Ciencias Basicas</md-option>
+                                <md-option value="ingenieria">Ingeniería</md-option>
+                                <md-option value="tecnologiasAvanzadas">Tecnologias Avanzadas</md-option>
+                                <md-option
+                                  value="formacionIntergral"
+                                >Formacion Integral e Institucional</md-option>
+                              
+                              </md-select>
+                              </div>
+                            </md-field>
+                      
+                      </md-list-item>
+                      <md-list-item>
                         <md-field>
                           <label>Cargo</label>
                           <md-input v-model="cargo"></md-input>
                         </md-field>
                       </md-list-item>
-                      <md-list-item>
-                        <md-field>
-                          <label>Departamento</label>
-                          <md-input v-model="departamento"></md-input>
-                        </md-field>
-                      </md-list-item>
-                    </md-list>
+                      </md-list>
+
                     <!--<md-list-item>
                         <md-field>
                           <label>¿Administrador del sistema?</label>
@@ -86,7 +115,7 @@
         </div>
 
         <md-list>
-          <md-list-item v-for="destinatario in destinatarios" :key="componentKey">
+          <md-list-item v-for="(destinatario,index) in destinatarios" >
             <label class="md-list-item-text">{{destinatario.nombre}}</label>
             <md-content class="md-primary">{{destinatario.estado}}</md-content>
             
@@ -95,16 +124,18 @@
               md-size="medium"
               :md-offset-x="127"
               :md-offset-y="-36"
+              :mdCloseOnSelect="closeOnSelect"
             >
+              
+
+              <md-menu-content>
+                <md-menu-item @click="eliminarUsuario(destinatario.email, index)">Eliminar</md-menu-item>
+                <md-menu-item @click="inhabilitarUsuario(destinatario.email)">Inhabilitar</md-menu-item>
+                <md-menu-item @click="activarUsuario(destinatario.email)">Activar</md-menu-item>
+              </md-menu-content>
               <md-button md-menu-trigger>
                 <i class="material-icons">more_vert</i>
               </md-button>
-
-              <md-menu-content>
-                <md-menu-item @click="eliminarUsuario(destinatario.email)">Eliminar</md-menu-item>
-                <md-menu-item @click="inhabilitarUsuario(destinatario.nombre)">Inhabilitar</md-menu-item>
-                <md-menu-item @click="activarUsuario(destinatario.nombre)">Activar</md-menu-item>
-              </md-menu-content>
             </md-menu>
           </md-list-item>
         </md-list>
@@ -118,14 +149,8 @@ import { db } from "../main";
 import { functions } from "firebase";
 import jsPDF from "jspdf";
 import firebase from 'firebase';
-var admin = require("firebase-admin");
+import axios from "axios";
 
-var serviceAccount = require("../proj-crypto-firebase-adminsdk-jx8dw-679f2ab9b3.json");
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://proj-crypto.firebaseio.com"
-});
 
 var RSA = require("jsrsasign");
 var d = new Date();
@@ -177,7 +202,8 @@ export default {
       cargo: "",
       departamento: "",
       password: "",
-      isAdmin: false
+      isAdmin: false,
+      closeOnSelect: true
     };
   },
   firestore() {
@@ -195,9 +221,6 @@ export default {
   },
 
   methods: {
-    forceRerender() {
-      this.componentKey += 1;  
-    },
     assignDialogRef(dialog) {
       this.dialog = dialog;
     },
@@ -234,74 +257,74 @@ export default {
   console.log(error.message)
   // ...
 });
-this.forceRerender()
-
-
-
-    },
-    eliminarUsuario: function(email) {
-      /*
-      db.collection("usuarios")
-        .where("email", "==", email)
-        .get()
-        .then(snap => {
-          return snap.docs[0].ref.delete();
-        })
-        .then(() => {
-          console.log("Successfully updated the record");
-         var index = this.destinatarios.indexOf(email)
-         this.destinatarios.splice(index,1)
-        })
-        .catch(error => {
-          console.error("There was an error editing the record: " + error);
-        });*/
-        admin.auth().getUserByEmail(email)
-  .then(function(userRecord) {
-    // See the UserRecord reference doc for the contents of userRecord.
-    console.log('Successfully fetched user data:', userRecord.toJSON());
-  })
-  .catch(function(error) {
-   console.log('Error fetching user data:', error);
-  });
-        /*admin.auth().deleteUser(uid)
-  .then(function() {
-    console.log('Successfully deleted user');
-  })
-  .catch(function(error) {
-    console.log('Error deleting user:', error);
-  });*/
-    },
-    inhabilitarUsuario: function(name) {
-      db.collection("usuarios")
-        .where("nombre", "==", name)
-        .get()
-        .then(snap => {
-          return snap.docs[0].ref.update({
-            estado: "Inhabilitado"
+this.destinatarios.push({
+            nombre: data.nombre,
+            estado: data.estado,
+            email: data.email
           });
-        })
-        .then(() => {
-          console.log("Successfully updated the record");
-        })
-        .catch(error => {
-          console.error("There was an error editing the record: " + error);
-        });
+
+
+
     },
-    activarUsuario: function(name) {
-      db.collection("usuarios")
-        .where("nombre", "==", name)
-        .get()
-        .then(snap => {
-          return snap.docs[0].ref.update({
-            estado: "Activo"
+    eliminarUsuario: function(email,index) {
+      const path = "http://localhost:1156/deleteUser";
+      axios.get(path,{
+        params:{
+          email : email
+        }
+      }).then(response=>{
+        if(response.data == 'Ok'){
+          db.collection("usuarios").where("email", "==", email).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+              db.collection("usuarios").doc(doc.id).delete().then(function() {
+                console.log("Document successfully deleted!");
+              }).catch(function(error) {
+                console.error("Error removing document: ", error);
+              });
+            });
           });
-        })
-        .then(() => {
-          console.log("Successfully updated the record");
-        })
-        .catch(error => {
-          console.error("There was an error editing the record: " + error);
-        });
+        }
+        else{
+          console.log("No se pudo eliminar al usuarios de auth");
+        }
+      });
+      this.destinatarios.splice(index, 1);
+    },
+    inhabilitarUsuario: function(email) {
+      const path = "http://localhost:1156/disableUser";
+      axios.get(path,{
+        params:{
+          email : email
+        }
+      }).then(response=>{
+        if(response.data == 'Ok'){
+          db.collection("usuarios").where("email", "==", email).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+              db.collection("usuarios").doc(doc.id).update({
+                estado: "Inhabilitado"
+          });
+            });
+          });
+        }
+      });
+    },
+    activarUsuario: function(email) {
+      const path = "http://localhost:1156/activateUser";
+      axios.get(path,{
+        params:{
+          email : email
+        }
+      }).then(response=>{
+        if(response.data == 'Ok'){
+          db.collection("usuarios").where("email", "==", email).get().then(function(querySnapshot) {
+            querySnapshot.forEach(function(doc) {
+              db.collection("usuarios").doc(doc.id).update({
+                estado: "Activo"
+          });
+            });
+          });
+        }
+      });
     }
   },
   watch: {
