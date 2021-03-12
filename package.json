@@ -18,7 +18,7 @@
     "firebase": "^5.6.0",
     "firebase-admin": "^8.9.2",
     "http2": "^3.3.7",
-    "jspdf": "^1.4.1",
+    "jspdf": "^2.3.1",
     "jsrsasign": "^8.0.12",
     "material-design-icons": "^3.0.1",
     "qrcode.vue": "^1.7.0",
